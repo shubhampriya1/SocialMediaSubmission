@@ -5,15 +5,38 @@ const UserSubmissionForm = () => {
   const [socialHandle, setSocialHandle] = useState("");
   const [images, setImages] = useState([]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    // Create a FormData object to send the data
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("socialHandle", socialHandle);
-    images.forEach((image) => formData.append("images", image));
+    formData.append("socialMediaHandle", socialHandle);
 
-    // Handle form submission
-    console.log("Submitting form with:", formData);
+    // Append images to the FormData object
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+
+    try {
+      // Send a POST request to the backend with the form data
+      const response = await fetch("http://localhost:5000/submit", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log(result.message); // Handle success
+        // Optionally reset form values
+        setName("");
+        setSocialHandle("");
+        setImages([]);
+      } else {
+        console.error(result.error); // Handle error
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
   };
 
   return (
@@ -22,7 +45,7 @@ const UserSubmissionForm = () => {
         <h2 className="text-2xl font-bold text-center mb-4">
           User Submission Form
         </h2>
-        <form onSubmit={handleSubmit}>
+        <div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
               Name
@@ -60,12 +83,13 @@ const UserSubmissionForm = () => {
             />
           </div>
           <button
-            type="submit"
+            type="button" // This button triggers the handleSubmit function, not the form submission
+            onClick={handleSubmit}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
           >
             Submit
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );
