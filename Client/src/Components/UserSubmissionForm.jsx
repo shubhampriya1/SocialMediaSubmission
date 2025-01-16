@@ -1,38 +1,41 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UserSubmissionForm = () => {
   const [name, setName] = useState("");
   const [socialHandle, setSocialHandle] = useState("");
   const [images, setImages] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    // Create a FormData object to send the data
     const formData = new FormData();
     formData.append("name", name);
     formData.append("socialMediaHandle", socialHandle);
 
-    // Append images to the FormData object
     images.forEach((image) => {
       formData.append("images", image);
     });
 
     try {
-      // Send a POST request to the backend with the form data
-      const response = await fetch("http://localhost:5000/submit", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/submit`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const result = await response.json();
 
       if (response.ok) {
-        console.log(result.message); // Handle success
-        // Optionally reset form values
+        setSuccessMessage("Form submitted successfully!");
         setName("");
         setSocialHandle("");
         setImages([]);
+        navigate("/dashboard");
       } else {
-        console.error(result.error); // Handle error
+        console.error(result.error);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -45,6 +48,11 @@ const UserSubmissionForm = () => {
         <h2 className="text-2xl font-bold text-center mb-4">
           User Submission Form
         </h2>
+        {successMessage && (
+          <div className="bg-green-100 text-green-700 p-2 rounded-md mb-4">
+            {successMessage}
+          </div>
+        )}
         <div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -83,7 +91,7 @@ const UserSubmissionForm = () => {
             />
           </div>
           <button
-            type="button" // This button triggers the handleSubmit function, not the form submission
+            type="button"
             onClick={handleSubmit}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
           >

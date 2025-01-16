@@ -10,4 +10,5 @@ router.post("/submit", upload.array("images"), submitUser);
 // Route to get all user data (for admin dashboard)
 router.get("/dashboard", getAllUsers);
 
+
 export default router;

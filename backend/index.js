@@ -3,9 +3,12 @@ import cors from "cors";
 import path from "path";
 import connection from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js"; // User routes
+import loginRoutes from "./routes/loginRoutes.js"
+import dotenv from 'dotenv';
+
 
 const app = express();
-
+dotenv.config(); 
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -16,6 +19,9 @@ connection();
 
 // API Routes
 app.use("/api", userRoutes);
+app.use("/auth", loginRoutes);
+app.use("/auth",loginRoutes);
+
 app.get("/", (req, res) => {
   res.send("sever is ready");
 });
