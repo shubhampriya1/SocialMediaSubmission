@@ -1,16 +1,14 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  name: {
+  email: {
     type: String,
     required: true,
+    unique: true,
+    trim: true,
   },
-  socialMediaHandle: {
+  password: {
     type: String,
-    required: true,
-  },
-  images: {
-    type: [String], // Array of image paths
     required: true,
   },
 });

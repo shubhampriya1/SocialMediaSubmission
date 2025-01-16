@@ -1,32 +1,41 @@
-import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
-import path from "path";
+import dotenv from "dotenv";
+import express from "express";
 import connection from "./config/db.js";
-import userRoutes from "./routes/userRoutes.js"; // User routes
-import loginRoutes from "./routes/loginRoutes.js"
-import dotenv from 'dotenv';
-
+import protect from "./middleware/auth-middleware.js";
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
-dotenv.config(); 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(process.cwd(), "uploads"))); // Serve uploaded files
 
-// Connect to MongoDB
+dotenv.config();
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static("uploads"));
+
 connection();
 
-// API Routes
-app.use("/api", userRoutes);
-app.use("/auth", loginRoutes);
-app.use("/auth",loginRoutes);
+app.use("/api", protect, userRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/", (req, res) => {
-  res.send("sever is ready");
+  res.status(200).json({ message: "API is running..." });
 });
-// Start the server
+
+app.use("*", (req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

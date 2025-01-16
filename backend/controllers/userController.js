@@ -1,36 +1,30 @@
-import User from "../models/User.js";
+import Uploads from "../models/Upload.js";
 
-// Handle user data submission
-// 
 export const submitUser = async (req, res) => {
   try {
-    console.log("Files uploaded:", req.files); // Check the uploaded files
-    console.log("Request body:", req.body); // Check other form data
-
     if (
       !req.body.name ||
       !req.body.socialMediaHandle ||
       !req.files ||
       req.files.length === 0
     ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "All fields are required and at least one image must be uploaded.",
-        });
+      return res.status(400).json({
+        error:
+          "All fields are required and at least one image must be uploaded.",
+      });
     }
 
     const { name, socialMediaHandle } = req.body;
-    const imagePaths = req.files.map((file) => file.path); // Map over the uploaded files
+    const imagePaths = req.files.map((file) => file.filename);
 
-    const newUser = new User({
+    const newUpload = new Uploads({
       name,
       socialMediaHandle,
       images: imagePaths,
+      user: req.user._id,
     });
 
-    await newUser.save();
+    await newUpload.save();
     res.json({ message: "User data submitted successfully!" });
   } catch (error) {
     console.error("Error in user submission:", error);
@@ -38,17 +32,31 @@ export const submitUser = async (req, res) => {
   }
 };
 
-
-// Fetch all users for the admin dashboard
-export const getAllUsers = async (req, res) => {
+export const getUserUploads = async (req, res) => {
   try {
-    // Fetch all users from the database
-    const users = await User.find();
+    const userId = req.user._id;
 
-    // Send back the list of users with their images
-    res.json(users);
+    const { page = 1, limit = 10 } = req.query;
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    const uploads = await Uploads.find({ user: userId })
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber);
+
+    const totalUploads = await Uploads.countDocuments({ user: userId });
+
+    res.json({
+      uploads,
+      pagination: {
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalUploads / limitNumber),
+        totalItems: totalUploads,
+      },
+    });
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Failed to fetch users" });
+    console.error("Error fetching uploads:", error);
+    res.status(500).json({ error: "Failed to fetch uploads" });
   }
 };
