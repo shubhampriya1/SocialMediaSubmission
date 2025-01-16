@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 const connection = () => {
-  const url = process.env.MONGODB_URI;
+  const url = process.env.MONGO_URI;
 
   mongoose.connect(url);
 
@@ -13,7 +13,6 @@ const connection = () => {
   });
 
   mongoose.connection.on("error", () => {
-    console.log("error", error.message);
     process.exit(1);
   });
 };
